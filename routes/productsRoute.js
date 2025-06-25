@@ -1,7 +1,10 @@
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
-const Product = require('../models/products');
+const auth = require('../controllers/auth');
+const validateProduct = require('../controllers/validateProduct');
 
+let products = [];
 // Create a new product
 router.post('/', async (req, res) => {
   try {
@@ -14,18 +17,20 @@ router.post('/', async (req, res) => {
 });
 
 // Get all products
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   const { category, search, page = 1, limit = 10 } = req.query;
-  const filter = {};
+  let filtered = [...products];
 
-  if (category) filter.category = category;
-  if (search) filter.name = new RegExp(search, 'i');
+  if (category) {
+    filtered = filtered.filter(p => p.category?.toLowerCase() === category.toLowerCase());
+  }
+  if (search) {
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  }
 
-  const products = await Product.find(filter)
-    .skip((page - 1) * limit)
-    .limit(Number(limit));
-
-  res.send(products);
+  const start = (page - 1) * limit;
+  const end = start + parseInt(limit);
+  res.send(filtered.slice(start, end));
 });
 
 
