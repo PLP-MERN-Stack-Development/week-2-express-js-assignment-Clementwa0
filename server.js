@@ -1,8 +1,10 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const productsRoute = require('./routes/productsRoute');
 const logger = require('./middleware/logger');
-const errorHandler = require('./utils/errorHandler');
+const errorHandler = require('./middleware/errorHandler');
+require('dotenv').config();
 
 const app = express();
 
@@ -12,17 +14,18 @@ app.use(express.json());
 app.use(logger);
 
 // Routes
-app.use('/products', productsRoute);
+app.get('/', (req, res) => res.send('Hello World'));
+app.use('/api/products', productsRoute);
 
 // 404 handler
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Global Error Handler
+// Global error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
